@@ -1,0 +1,26 @@
+{
+  "repository": "PedroHenrique910/seu-projeto-crawler",
+  "extractedAt": "2025-05-21T00:37:16.883Z",
+  "files": [
+    {
+      "filename": "README.md",
+      "path": "README.md",
+      "content": "# seu-projeto-crawler\n"
+    },
+    {
+      "filename": "exemplo.html",
+      "path": "exemplo.html",
+      "content": "Amoeba"
+    },
+    {
+      "filename": "index.html",
+      "path": "index.html",
+      "content": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <title>GitHub Repo Reader JSON</title>\r\n</head>\r\n\r\n<body>\r\n    <pre id=\"output\">Carregando dados do repositório... </pre>\r\n    <script>\r\n        async function fetchGitHubFiles(owner, repo, path = '') {\r\n            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;\r\n            const response = await fetch(apiUrl);\r\n            if (!response.ok) {\r\n                throw new Error(`Erro ao buscar ${apiUrl}: ${response.statusText}`);\r\n            }\r\n            const items = await response.json();\r\n            const files = [];\r\n            for (const item of items) {\r\n                if (item.type === 'file') {\r\n                    const extension = item.name.split('.').pop().toLowerCase();\r\n                    const ignoredExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp', 'yml', 'yaml', 'pdf'];\r\n                    if (ignoredExtensions.includes(extension)) {\r\n                        continue;\r\n                    }\r\n                    try {\r\n                        const contentResponse = await fetch(item.download_url);\r\n                        if (contentResponse.ok) {\r\n                            const content = await contentResponse.text();\r\n                            files.push({\r\n                                filename: item.name,\r\n                                path: item.path,\r\n                                content: content\r\n                            });\r\n                        }\r\n                    } catch (error) {\r\n                        console.error(`Erro ao baixar arquivo ${item.path}:`, error);\r\n                    }\r\n                } else if (item.type === 'dir') {\r\n                    const subFiles = await fetchGitHubFiles(owner, repo, item.path);\r\n                    files.push(...subFiles);\r\n                }\r\n            }\r\n\r\n            return files;\r\n        }\r\n        async function startCrawler() {\r\n            const owner = 'PedroHenrique910'; // Define o proprietário (owner ) do repositório // < - - - coloque o owner aqui\r\n            const repo = 'seu-projeto-crawler'; // Define o nome do repositório // < - - - coloque o repositório aqui\r\n            const output = document.getElementById('output');\r\n            try {\r\n                const files = await fetchGitHubFiles(owner, repo);\r\n                const finalJson = {\r\n                    repository: `${owner}/${repo}`,\r\n                    extractedAt: new Date().toISOString(),\r\n                    files: files\r\n                };\r\n                output.textContent = JSON.stringify(finalJson, null, 2);\r\n            } catch (error) {\r\n                console.error('Erro geral: ', error);\r\n                output.textContent = `Erro: ${error.message}`;\r\n            }\r\n        }\r\n        startCrawler();\r\n    </script>\r\n</body>\r\n\r\n</html>"
+    },
+    {
+      "filename": "style.css",
+      "path": "style.css",
+      "content": ""
+    }
+  ]
+}
